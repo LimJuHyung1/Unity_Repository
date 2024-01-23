@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,9 +11,11 @@ public class Player : MonoBehaviourPunCallbacks
     [SerializeField] GameObject canvasObject;
     [SerializeField] Transform joystickTransform;
 
+    [SerializeField] protected bool isAttacking = false;
     [SerializeField] protected int hp;
     [SerializeField] protected int hpMax;
     [SerializeField] protected int atkDamage;
+    [SerializeField] protected float atkDelay;
 
     protected Rigidbody2D rigid;
     protected SpriteRenderer spriteRenderer;
@@ -29,6 +32,8 @@ public class Player : MonoBehaviourPunCallbacks
 
     protected virtual void Start()
     {
+        isAttacking = false;
+
         // "Canvas"라는 이름을 가진 부모 오브젝트를 찾음
         canvasObject = GameObject.Find("Canvas");
 
@@ -86,6 +91,16 @@ public class Player : MonoBehaviourPunCallbacks
     protected virtual void InitStatus()   // 스탯 초기화
     {
 
+    }
+
+    public void Damaged(int yourAtkDamage)  // 피해 받음
+    {
+        this.hp -= yourAtkDamage;
+    }
+
+    protected void InvokeAtkDelay()
+    {
+        isAttacking = false;
     }
 
     protected virtual IEnumerator FadeIn()

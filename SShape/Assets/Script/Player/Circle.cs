@@ -17,7 +17,22 @@ public class Circle : Player
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        // 피해 입음
+        if (collision.gameObject.CompareTag("OtherPlayer") && isAttacking == false)
+        {
+            isAttacking = true;
+            collision.gameObject.GetComponent<Player>().Damaged(this.atkDamage);
+            Debug.Log("상대 플레이어 피해 입힘");
+
+            Invoke("InvokeAtkDelay", atkDelay);
+        }
+    }
+
+    void OnCollisionExit2D(Collision2D collision)
+    {
+        if (collision.gameObject.CompareTag("OtherPlayer"))
+        {
+            isAttacking = false;
+        }
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -44,5 +59,6 @@ public class Circle : Player
         this.hp = 10;
         this.hpMax = 10;
         this.atkDamage = 2;
-    }
+        this.atkDelay = 1;
+    }    
 }

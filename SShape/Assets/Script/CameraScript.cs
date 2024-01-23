@@ -75,11 +75,19 @@ public class CameraScript : MonoBehaviour
         cam.cullingMask = currentCullingMask;
     }
 
-    public void FindPlayer()
+    public void FindPlayer(GameObject refPlayer)
     {
+        /*
         if (PhotonNetwork.IsMasterClient)
             player = GameObject.Find("Square(Clone)");
         else
             player = GameObject.Find("Circle(Clone)");
+        */
+
+        // player = GameObject.Find("Circle");                
+        // player = GameObject.Find(refPlayer);
+        // player = GameObject.Find("Triangle");
+
+        player = refPlayer;
     }
 }
