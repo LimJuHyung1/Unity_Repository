@@ -1,4 +1,4 @@
-## SShape game project
+# SShape game project
 
 ---
 
@@ -8,6 +8,8 @@
 + __Shooting__
 + __2D__
 + __Mult Play__
+
+---
 
 User chooses one shape, and match another player.
 
