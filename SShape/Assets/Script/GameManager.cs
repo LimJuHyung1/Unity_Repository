@@ -72,21 +72,36 @@ public class GameManager : MonoBehaviourPunCallbacks
         SetPlayer("Square");
     }
 
-    public void SetPlayer(string playerName)
+    public void SetPlayer(string playerName)    // 플레이어 생성
     {
         GameObject player =
             PhotonNetwork.Instantiate
             (playerName, spawnVec[Random.Range(0, 9)], Quaternion.identity);
 
+        // 레이어 이름으로 레이어를 찾아서 설정
+        if (player.GetComponent<PhotonView>().IsMine)
+        {
+            int setLayer = LayerMask.NameToLayer("Player");
+            player.layer = setLayer;
+
+            player.tag = "Player";
+
+            // 부모 오브젝트의 자식 오브젝트들을 찾기
+            int childCount = player.transform.childCount;
+
+            for (int i = 0; i < childCount; i++)
+            {
+                // 각 자식 오브젝트에 접근
+                Transform child = player.transform.GetChild(i);
+
+                child.gameObject.layer = setLayer;
+                child.gameObject.tag = "Player";
+            }
+        }
+
         camera.GetComponent<CameraScript>().FindPlayer(player);
 
         circleChoiceButton.gameObject.SetActive(false);
         squareChoiceButton.gameObject.SetActive(false);
-    }
-
-    [PunRPC]
-    void AddPlayer(GameObject player)
-    {
-        players.Add(player);
     }
 }

@@ -30,8 +30,7 @@ public class Square : Player
             isDiscovering = true;
             //collision.GetComponent<Player>().FadeIn();
 
-            InvokeRepeating("ShootBullet", 0f, atkDelay);
-
+            PV.RPC("ShootBullet", RpcTarget.All);
         }
     }
     /*
@@ -56,7 +55,7 @@ public class Square : Player
             isDiscovering = false;
             //collision.GetComponent<Player>().FadeOut();
 
-            CancelInvoke("ShootBullet");
+            //CancelInvoke("ShootBullet");
         }
     }
 
@@ -69,12 +68,13 @@ public class Square : Player
         this.atkDelay = 2;
     }
 
+    [PunRPC]
     void ShootBullet()  // ÅºÈ¯ ¹ß»ç
     {
         if(squareBullet != null)
         {
-            GameObject bullet = Instantiate(squareBullet, this.transform.position, Quaternion.identity);
-            //quareBullet = PhotonNetwork.Instantiate("SquareBullet", this.transform.position, Quaternion.identity);
+            //GameObject bullet = Instantiate(squareBullet, this.transform.position, Quaternion.identity);
+            GameObject bullet = PhotonNetwork.Instantiate("SquareBullet", this.transform.position, Quaternion.identity);
             Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
             rigid.AddForce(this.transform.right * 10.0f, ForceMode2D.Impulse);
         }

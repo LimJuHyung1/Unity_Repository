@@ -8,7 +8,6 @@ public class CameraScript : MonoBehaviour
     Camera cam;
     Vector3 dis;
 
-    bool nowDiscovering = false;
     int otherPlayerLayer = 8;   // 상대 플레이어 레이어
 
     void Start()
@@ -23,27 +22,17 @@ public class CameraScript : MonoBehaviour
         if (player != null)    // 자신의 캐릭터가 존재할 경우
         {
             // 상대 플레이어를 발견
-            if (player.GetComponent<Player>().isDiscovering
-                && !nowDiscovering)
+            if (player.GetComponent<Player>().isDiscovering)
             {
-                nowDiscovering = true;
                 ActiveOtherPlayerLayer();
             }
 
             // 상대 플레이어 시야에서 벗어남
-            if (!player.GetComponent<Player>().isDiscovering
-                && nowDiscovering)
+            if (!player.GetComponent<Player>().isDiscovering)
             {
-                nowDiscovering = false;
                 UnactiveOtherPlayerLayer();
             }
-        }
-    }
 
-    void LateUpdate()
-    {        
-        if (player != null)
-        {
             // 카메라 위치 설정
             this.transform.position = player.transform.position + dis;
 
