@@ -11,49 +11,34 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     private PhotonView PV;
     public GameObject camera;
+
     public Button circleChoiceButton;
     public Button squareChoiceButton;
+    public Image screen;
+    public Text countdownText;
 
-    Vector2[] spawnVec = new Vector2[9];
-    int startX = -35;
-    int startY = 35;
-    int addX = 35;
-    int addY = -35;
+    private float timer = 10f;
+    private bool isChoosed = false;
+
+    Vector2[] spawnVec = new Vector2[8];    
 
     void Awake()
     {
-        for(int i = 0; i < spawnVec.Length; i++)
-        {
-            if (i % 3 == 0 && i != 0)
-            {
-                startY += addY;
-                startX -= 105;
-            }              
-            
-            spawnVec[i] = new Vector2(startX, startY);
-            startX += addX;            
-        }
-
         PV = GetComponent<PhotonView>();
+
+        SetSpawnPosition();
     }
 
     void Start()
     {
-        /*
-        if(PhotonNetwork.IsMasterClient)
-        {
-            PhotonNetwork.Instantiate("Square", Vector2.zero, Quaternion.identity);
-        }
-        else
-        {
-            PhotonNetwork.Instantiate("Circle", Vector2.zero, Quaternion.identity);
-        }
-        */
+        // 초기화
+        UpdateCountdownText();
+        // 1초마다 UpdateTimer 메소드 호출
+        InvokeRepeating("UpdateTimer", 1f, 1f);
 
         Application.targetFrameRate = 90;
     }
 
-    //[PunRPC]
     public void ChooseCircle()
     {
 
@@ -64,19 +49,37 @@ public class GameManager : MonoBehaviourPunCallbacks
         //PV.RPC("AddPlayer", RpcTarget.AllBuffered, player);
 
         SetPlayer("Circle");
+
+        isChoosed = true;
     }
 
-    //[PunRPC]
     public void ChooseSquare()
     {
         SetPlayer("Square");
+
+        isChoosed = true;
+    }
+
+    // 플레이어 스폰 지점 설정
+    void SetSpawnPosition()
+    {
+        spawnVec[0] = new Vector2(-35, 35);
+        spawnVec[1] = new Vector2(0, 35);
+        spawnVec[2] = new Vector2(35, 35);
+
+        spawnVec[3] = new Vector2(-35, 0);
+        spawnVec[4] = new Vector2(35, 0);
+
+        spawnVec[5] = new Vector2(-35, -35);
+        spawnVec[6] = new Vector2(0, -35);
+        spawnVec[7] = new Vector2(35, -35);
     }
 
     public void SetPlayer(string playerName)    // 플레이어 생성
     {
         GameObject player =
             PhotonNetwork.Instantiate
-            (playerName, spawnVec[Random.Range(0, 9)], Quaternion.identity);
+            (playerName, spawnVec[Random.Range(0, 8)], Quaternion.identity);
 
         // 레이어 이름으로 레이어를 찾아서 설정
         if (player.GetComponent<PhotonView>().IsMine)
@@ -103,5 +106,39 @@ public class GameManager : MonoBehaviourPunCallbacks
 
         circleChoiceButton.gameObject.SetActive(false);
         squareChoiceButton.gameObject.SetActive(false);
+    }
+
+    void UpdateTimer()
+    {
+        timer -= 1f;
+        UpdateCountdownText();
+
+        // 타이머가 0 이하로 떨어지면 타이머 중지
+        if (timer <= 0f)
+        {
+            screen.gameObject.SetActive(false); // 스크린 제거
+
+            // 캐릭터를 선택하지 않았을 경우
+            if (isChoosed == false)
+            {
+                // 무작위로 원, 사각형 선택됨
+                if (Random.Range(0, 2) == 0)
+                {
+                    ChooseCircle();
+                }
+                else
+                {
+                    ChooseSquare();
+                }
+            }
+
+            CancelInvoke("UpdateTimer");
+        }
+    }
+
+    void UpdateCountdownText()
+    {
+        // UI Text 업데이트
+        countdownText.text = "시작까지 " + timer.ToString("F0") + "초"; // "F0"는 소수점 이하를 표시하지 않음
     }
 }

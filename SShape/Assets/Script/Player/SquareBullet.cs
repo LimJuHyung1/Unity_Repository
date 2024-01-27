@@ -33,10 +33,10 @@ public class SquareBullet : MonoBehaviourPunCallbacks
         {         
             Debug.Log("상대 플레이어에게 데미지를 입혔습니다.");
         }        
-
+        
         PV.RPC("DestroyBullet", RpcTarget.AllBuffered);
     }
 
     [PunRPC]
-    void DestroyBullet() => Destroy(gameObject);    
+    void DestroyBullet() => Destroy(gameObject);        
 }

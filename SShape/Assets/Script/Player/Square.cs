@@ -10,7 +10,9 @@ public class Square : Player
     PolygonCollider2D polygon;
 
     [SerializeField] GameObject squareBullet;
-    [SerializeField] private float elapsedTime = 0f; // 경과 시간을 저장할 변수
+
+    private float timer = 0f;
+    public float interval = 1f; // 1초마다 실행하도록 설정
 
     protected override void Start()
     {
@@ -23,6 +25,23 @@ public class Square : Player
         squareBullet = Resources.Load<GameObject>("SquareBullet");
     }
 
+    void Update()
+    {
+        if (isDiscovering)
+        {
+            timer += Time.deltaTime;
+
+            if (timer >= interval)
+            {
+                // 원하는 동작 수행
+                PV.RPC("ShootBullet", RpcTarget.All);
+
+                // 타이머 초기화
+                timer = 0f;
+            }
+        }    
+    }
+
     void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.CompareTag("OtherPlayer"))
@@ -30,7 +49,7 @@ public class Square : Player
             isDiscovering = true;
             //collision.GetComponent<Player>().FadeIn();
 
-            PV.RPC("ShootBullet", RpcTarget.All);
+            //PV.RPC("ShootBullet", RpcTarget.All);
         }
     }
     /*
@@ -55,7 +74,7 @@ public class Square : Player
             isDiscovering = false;
             //collision.GetComponent<Player>().FadeOut();
 
-            //CancelInvoke("ShootBullet");
+            timer = 0f;
         }
     }
 
