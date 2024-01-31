@@ -17,7 +17,7 @@ public class Square : Player
     protected override void Start()
     {
         base.Start();
-        InitStatus();
+        PV.RPC("InitStatus", RpcTarget.All);        
 
         box = GetComponent<BoxCollider2D>();
         polygon = GetComponent<PolygonCollider2D>();
@@ -78,6 +78,7 @@ public class Square : Player
         }
     }
 
+    [PunRPC]
     protected override void InitStatus()
     {
         base.InitStatus();
@@ -93,7 +94,9 @@ public class Square : Player
         if(squareBullet != null)
         {
             //GameObject bullet = Instantiate(squareBullet, this.transform.position, Quaternion.identity);
-            GameObject bullet = PhotonNetwork.Instantiate("SquareBullet", this.transform.position, Quaternion.identity);
+            GameObject bullet = 
+                PhotonNetwork.Instantiate
+                ("SquareBullet", this.transform.position, Quaternion.identity);
             Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
             rigid.AddForce(this.transform.right * 10.0f, ForceMode2D.Impulse);
         }

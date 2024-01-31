@@ -1,3 +1,4 @@
+using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -11,6 +12,7 @@ public class Circle : Player
     protected override void Start()
     {
         base.Start();
+        PV.RPC("InitStatus", RpcTarget.All);
 
         circle = GetComponent<CircleCollider2D>();        
     }
@@ -53,6 +55,7 @@ public class Circle : Player
         }
     }
 
+    [PunRPC]
     protected override void InitStatus()
     {
         base.InitStatus();

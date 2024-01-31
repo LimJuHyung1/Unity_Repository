@@ -12,10 +12,10 @@ public class Player : MonoBehaviourPunCallbacks
     [SerializeField] Transform joystickTransform;
 
     [SerializeField] protected bool isAttacking = false;
-    [SerializeField] protected int hp;
-    [SerializeField] protected int hpMax;
-    [SerializeField] protected int atkDamage;
-    [SerializeField] protected float atkDelay;
+    [SerializeField] public int hp;
+    [SerializeField] public int hpMax;
+    [SerializeField] public int atkDamage;
+    [SerializeField] public float atkDelay;
 
     protected Rigidbody2D rigid;
     protected SpriteRenderer spriteRenderer;

@@ -16,17 +16,24 @@ public class GameManager : MonoBehaviourPunCallbacks
     public Button squareChoiceButton;
     public Image screen;
     public Text countdownText;
+    public Text hp;
+
+    GameObject player;
 
     private float timer = 10f;
     private bool isChoosed = false;
+    private bool isSpawned = false; // 플레이어 생성 시 true로 변경됨
 
     Vector2[] spawnVec = new Vector2[8];    
 
     void Awake()
     {
+        // PhotonNetwork.ConnectUsingSettings();
+
         PV = GetComponent<PhotonView>();
 
         SetSpawnPosition();
+        hp.gameObject.SetActive(false);
     }
 
     void Start()
@@ -37,6 +44,12 @@ public class GameManager : MonoBehaviourPunCallbacks
         InvokeRepeating("UpdateTimer", 1f, 1f);
 
         Application.targetFrameRate = 90;
+    }
+
+    void Update()
+    {
+        if(isSpawned == true)
+            hp.text = "HP : " + player.GetComponent<Player>().hp.ToString();
     }
 
     public void ChooseCircle()
@@ -77,9 +90,11 @@ public class GameManager : MonoBehaviourPunCallbacks
 
     public void SetPlayer(string playerName)    // 플레이어 생성
     {
-        GameObject player =
+        player =
             PhotonNetwork.Instantiate
             (playerName, spawnVec[Random.Range(0, 8)], Quaternion.identity);
+        
+        isSpawned = true;
 
         // 레이어 이름으로 레이어를 찾아서 설정
         if (player.GetComponent<PhotonView>().IsMine)
@@ -117,6 +132,7 @@ public class GameManager : MonoBehaviourPunCallbacks
         if (timer <= 0f)
         {
             screen.gameObject.SetActive(false); // 스크린 제거
+            hp.gameObject.SetActive(true);
 
             // 캐릭터를 선택하지 않았을 경우
             if (isChoosed == false)

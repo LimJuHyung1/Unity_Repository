@@ -1,5 +1,6 @@
 using Photon.Pun;
 using Photon.Realtime;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -29,14 +30,50 @@ public class SquareBullet : MonoBehaviourPunCallbacks
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.CompareTag("OtherPlayer"))
-        {         
-            Debug.Log("상대 플레이어에게 데미지를 입혔습니다.");
-        }        
-        
-        PV.RPC("DestroyBullet", RpcTarget.AllBuffered);
+        if (!collision.gameObject.CompareTag("Player"))
+        {
+            if (collision.gameObject.CompareTag("OtherPlayer"))
+            {
+                PhotonView otherPlayerPhotonView = collision.gameObject.GetComponent<PhotonView>();
+                Debug.Log(otherPlayerPhotonView.ViewID);
+
+                if (otherPlayerPhotonView != null)
+                {
+                    PV.RPC("AttackOtherPlayer", RpcTarget.AllBuffered, otherPlayerPhotonView.ViewID);
+                }
+            }
+
+            PV.RPC("DestroyBullet", RpcTarget.AllBuffered);
+        }            
+    }
+
+    [PunRPC]    // 상대 플레이어에게 데미지를 입힘
+    void AttackOtherPlayer(int targetPhotonViewID)
+    {
+        // PhotonView ID를 사용하여 상대 플레이어에게 데미지 입힘
+        PhotonView targetPhotonView = PhotonView.Find(targetPhotonViewID);
+        if (targetPhotonView != null)
+        {
+            Player targetPlayer = targetPhotonView.GetComponent<Player>();
+            if (!PV.IsMine && targetPlayer != null && targetPlayer.GetComponent<PhotonView>().IsMine)
+            {
+                // 데미지를 입히는 로직 구현
+                // targetPlayer.hp -= GetComponent<Player>().atkDamage;
+                targetPlayer.hp -= 3;
+                Debug.Log(targetPlayer.name + " : " +  targetPlayer.hp);
+            }
+        }
     }
 
     [PunRPC]
-    void DestroyBullet() => Destroy(gameObject);        
+    void DestroyBullet() 
+    {
+        Invoke("WaitDestroy", 1f);
+        this.gameObject.SetActive(false);
+    }
+
+    void WaitDestroy()
+    {
+        Destroy(gameObject);
+    }
 }
