@@ -34,7 +34,7 @@ public class Square : Player
             if (timer >= interval)
             {
                 // 원하는 동작 수행
-                PV.RPC("ShootBullet", RpcTarget.All);
+                ShootBullet();
 
                 // 타이머 초기화
                 timer = 0f;
@@ -88,17 +88,15 @@ public class Square : Player
         this.atkDelay = 2;
     }
 
-    [PunRPC]
     void ShootBullet()  // 탄환 발사
     {
         if(squareBullet != null)
         {
-            //GameObject bullet = Instantiate(squareBullet, this.transform.position, Quaternion.identity);
             GameObject bullet = 
                 PhotonNetwork.Instantiate
                 ("SquareBullet", this.transform.position, Quaternion.identity);
-            Rigidbody2D rigid = bullet.GetComponent<Rigidbody2D>();
-            rigid.AddForce(this.transform.right * 10.0f, ForceMode2D.Impulse);
+
+            bullet.GetComponent<PhotonView>().RPC("ShootRPC", RpcTarget.All, this.transform.right);
         }
     }
 }

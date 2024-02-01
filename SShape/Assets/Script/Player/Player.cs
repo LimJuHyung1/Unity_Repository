@@ -64,27 +64,27 @@ public class Player : MonoBehaviourPunCallbacks
 
     protected virtual void FixedUpdate()
     {
-        if(joystick != null && PV.IsMine)
+        if (PV.IsMine)
         {
-            x = joystick.GetComponent<VariableJoystick>().Horizontal;
-            y = joystick.GetComponent<VariableJoystick>().Vertical;
+            if (joystick != null)
+            {
+                x = joystick.GetComponent<VariableJoystick>().Horizontal;
+                y = joystick.GetComponent<VariableJoystick>().Vertical;
 
-            // Move
-            moveVec = new Vector2(x, y) * walkSpeed * Time.deltaTime;
-            rigid.MovePosition(rigid.position + moveVec);
+                // Move
+                moveVec = new Vector2(x, y) * walkSpeed * Time.deltaTime;
+                rigid.MovePosition(rigid.position + moveVec);
 
-            if (moveVec.sqrMagnitude == 0)
-                return; // no input = no rotation
+                if (moveVec.sqrMagnitude == 0)
+                    return; // no input = no rotation
 
-            Quaternion dirQuat = Quaternion.LookRotation(moveVec);  // 회전하려는 방향
+                Quaternion dirQuat = Quaternion.LookRotation(moveVec);  // 회전하려는 방향
 
-            float angle = Mathf.Atan2(moveVec.y, moveVec.x) * Mathf.Rad2Deg;
-            Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
-            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 0.3f);
-        }
-        else
-        {
-            //Debug.Log("조이스틱 참조하지 못 함");
+                float angle = Mathf.Atan2(moveVec.y, moveVec.x) * Mathf.Rad2Deg;
+                Quaternion targetRotation = Quaternion.AngleAxis(angle, Vector3.forward);
+                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 0.3f);
+            }
+
         }
     }
 
@@ -93,6 +93,7 @@ public class Player : MonoBehaviourPunCallbacks
 
     }
 
+//    [PunRPC]
     public void Damaged(int yourAtkDamage)  // 피해 받음
     {
         this.hp -= yourAtkDamage;
@@ -140,5 +141,5 @@ public class Player : MonoBehaviourPunCallbacks
         Color finalColor = spriteRenderer.color;
         finalColor.a = 0f; // 완전히 페이드 아웃되었을 때 알파 값 0으로 설정
         spriteRenderer.color = finalColor;
-    }
+    }    
 }

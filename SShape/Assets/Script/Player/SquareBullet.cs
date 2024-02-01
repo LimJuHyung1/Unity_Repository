@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Pun.Demo.Asteroids;
 using Photon.Realtime;
 using System;
 using System.Collections;
@@ -8,14 +9,15 @@ using UnityEngine;
 public class SquareBullet : MonoBehaviourPunCallbacks
 {
     public float rotationSpeed = 360f; // 회전 속도 (1초에 360도)
+    int dir;
+
     BoxCollider2D box;
-    public PhotonView PV;
+    public PhotonView PV;    
 
     // Start is called before the first frame update
     void Start()
     {
-        box = GetComponent<BoxCollider2D>();        
-        PV = GetComponent<PhotonView>();
+        box = GetComponent<BoxCollider2D>();
     }
 
     // Update is called once per frame
@@ -30,50 +32,49 @@ public class SquareBullet : MonoBehaviourPunCallbacks
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (!collision.gameObject.CompareTag("Player"))
+        if (collision.gameObject.tag == "Block")
         {
-            if (collision.gameObject.CompareTag("OtherPlayer"))
-            {
-                PhotonView otherPlayerPhotonView = collision.gameObject.GetComponent<PhotonView>();
-                Debug.Log(otherPlayerPhotonView.ViewID);
+            PV.RPC("DestroyRPC", RpcTarget.AllBuffered);
+        }
 
-                if (otherPlayerPhotonView != null)
-                {
-                    PV.RPC("AttackOtherPlayer", RpcTarget.AllBuffered, otherPlayerPhotonView.ViewID);
-                }
-            }
-
-            PV.RPC("DestroyBullet", RpcTarget.AllBuffered);
-        }            
-    }
-
-    [PunRPC]    // 상대 플레이어에게 데미지를 입힘
-    void AttackOtherPlayer(int targetPhotonViewID)
-    {
-        // PhotonView ID를 사용하여 상대 플레이어에게 데미지 입힘
-        PhotonView targetPhotonView = PhotonView.Find(targetPhotonViewID);
-        if (targetPhotonView != null)
+        if (collision.gameObject.tag == "OtherPlayer")
         {
-            Player targetPlayer = targetPhotonView.GetComponent<Player>();
-            if (!PV.IsMine && targetPlayer != null && targetPlayer.GetComponent<PhotonView>().IsMine)
-            {
-                // 데미지를 입히는 로직 구현
-                // targetPlayer.hp -= GetComponent<Player>().atkDamage;
-                targetPlayer.hp -= 3;
-                Debug.Log(targetPlayer.name + " : " +  targetPlayer.hp);
-            }
+            // collision.gameObject.GetComponent<Player>().Damaged(2);
+            PV.RPC("AttackOtherPlayer", RpcTarget.AllBuffered, collision.gameObject.GetComponent<PhotonView>().ViewID);
+            Debug.Log("상대 플레이어가 피해를 입었습니다.");
+
+            PV.RPC("DestroyRPC", RpcTarget.AllBuffered);
         }
     }
 
     [PunRPC]
-    void DestroyBullet() 
+    void ShootRPC(Vector3 right)
     {
-        Invoke("WaitDestroy", 1f);
-        this.gameObject.SetActive(false);
+        Rigidbody2D rigid = this.GetComponent<Rigidbody2D>();
+        rigid.AddForce(right * 10.0f, ForceMode2D.Impulse);
     }
 
-    void WaitDestroy()
+    [PunRPC]
+    void DestroyRPC() => Destroy(gameObject);
+
+    [PunRPC]    // 상대 플레이어에게 데미지를 입힘
+    void AttackOtherPlayer(int targetPhotonViewID)
     {
-        Destroy(gameObject);
-    }
+        if (PV.IsMine)
+        {
+            // PhotonView ID를 사용하여 상대 플레이어에게 데미지 입힘
+            PhotonView targetPhotonView = PhotonView.Find(targetPhotonViewID);
+            if (targetPhotonView != null)
+            {
+                Player targetPlayer = targetPhotonView.GetComponent<Player>();
+                if (targetPlayer != null && targetPlayer.GetComponent<PhotonView>().IsMine)
+                {
+                    // 데미지를 입히는 로직 구현
+                    // targetPlayer.hp -= GetComponent<Player>().atkDamage;
+                    targetPlayer.hp -= 3;
+                    Debug.Log(targetPlayer.name + " : " + targetPlayer.hp);
+                }
+            }
+        }
+    }       
 }
