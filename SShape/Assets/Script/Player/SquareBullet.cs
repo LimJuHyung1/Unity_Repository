@@ -9,7 +9,7 @@ using UnityEngine;
 public class SquareBullet : MonoBehaviourPunCallbacks
 {
     public float rotationSpeed = 360f; // 회전 속도 (1초에 360도)
-    int dir;
+    int squareViewID;
 
     BoxCollider2D box;
     public PhotonView PV;    
@@ -32,24 +32,29 @@ public class SquareBullet : MonoBehaviourPunCallbacks
 
     void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag == "Block")
+        PhotonView colPV = collision.gameObject.GetComponent<PhotonView>();
+
+        if (collision.gameObject.CompareTag("OtherPlayer") 
+            && squareViewID != colPV.ViewID
+            && !colPV.IsMine)
+        {
+            PV.RPC("AttackRPC", RpcTarget.AllBuffered, colPV.ViewID);
+            PV.RPC("DestroyRPC", RpcTarget.AllBuffered);
+        }
+
+        if (collision.gameObject.CompareTag("Block") && !collision.gameObject.CompareTag("OtherPlayer"))
         {
             PV.RPC("DestroyRPC", RpcTarget.AllBuffered);
         }
 
-        if (collision.gameObject.tag == "OtherPlayer")
-        {
-            // collision.gameObject.GetComponent<Player>().Damaged(2);
-            PV.RPC("AttackOtherPlayer", RpcTarget.AllBuffered, collision.gameObject.GetComponent<PhotonView>().ViewID);
-            Debug.Log("상대 플레이어가 피해를 입었습니다.");
 
-            PV.RPC("DestroyRPC", RpcTarget.AllBuffered);
-        }
+        // if()        
     }
 
     [PunRPC]
-    void ShootRPC(Vector3 right)
+    void ShootRPC(Vector3 right, int myViewID)
     {
+        squareViewID = myViewID;
         Rigidbody2D rigid = this.GetComponent<Rigidbody2D>();
         rigid.AddForce(right * 10.0f, ForceMode2D.Impulse);
     }
@@ -76,5 +81,13 @@ public class SquareBullet : MonoBehaviourPunCallbacks
                 }
             }
         }
-    }       
+    }
+
+    [PunRPC]
+    void AttackRPC(int ViewID)
+    {
+        PhotonView tmp = PhotonView.Find(ViewID);
+
+        tmp.GetComponent<Player>().hp -= 1;
+    }
 }

@@ -22,18 +22,9 @@ public class Circle : Player
         if (collision.gameObject.CompareTag("OtherPlayer") && isAttacking == false)
         {
             isAttacking = true;
-            collision.gameObject.GetComponent<Player>().Damaged(this.atkDamage);
-            Debug.Log("상대 플레이어 피해 입힘");
+            PV.RPC("AttackRPC", RpcTarget.AllBuffered, collision.gameObject.GetComponent<PhotonView>().ViewID);
 
             Invoke("InvokeAtkDelay", atkDelay);
-        }
-    }
-
-    void OnCollisionExit2D(Collision2D collision)
-    {
-        if (collision.gameObject.CompareTag("OtherPlayer"))
-        {
-            isAttacking = false;
         }
     }
 
@@ -62,6 +53,14 @@ public class Circle : Player
         this.hp = 10;
         this.hpMax = 10;
         this.atkDamage = 2;
-        this.atkDelay = 1;
-    }    
+        this.atkDelay = 2;
+    }
+
+    [PunRPC]
+    void AttackRPC(int ViewID)
+    {
+        PhotonView tmp = PhotonView.Find(ViewID);
+        
+        tmp.GetComponent<Player>().hp -= this.atkDamage;
+    }
 }

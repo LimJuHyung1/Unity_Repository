@@ -96,7 +96,7 @@ public class Square : Player
                 PhotonNetwork.Instantiate
                 ("SquareBullet", this.transform.position, Quaternion.identity);
 
-            bullet.GetComponent<PhotonView>().RPC("ShootRPC", RpcTarget.All, this.transform.right);
+            bullet.GetComponent<PhotonView>().RPC("ShootRPC", RpcTarget.All, this.transform.right, PV.ViewID);
         }
     }
 }
