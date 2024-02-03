@@ -12,12 +12,15 @@ public class SquareBullet : MonoBehaviourPunCallbacks
     int squareViewID;
 
     BoxCollider2D box;
+    AudioSource audio;
+    public AudioClip attackSound;
     public PhotonView PV;    
 
     // Start is called before the first frame update
     void Start()
     {
         box = GetComponent<BoxCollider2D>();
+        audio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -29,58 +32,40 @@ public class SquareBullet : MonoBehaviourPunCallbacks
         // 현재 오브젝트를 회전
         transform.Rotate(Vector3.forward * rotation);
     }
-
+    
     void OnCollisionEnter2D(Collision2D collision)
     {
         PhotonView colPV = collision.gameObject.GetComponent<PhotonView>();
 
+        // 상대 플레이어와 충돌
         if (collision.gameObject.CompareTag("OtherPlayer") 
             && squareViewID != colPV.ViewID
             && !colPV.IsMine)
         {
+            PV.RPC("SoundRPC", RpcTarget.All);
             PV.RPC("AttackRPC", RpcTarget.AllBuffered, colPV.ViewID);
-            PV.RPC("DestroyRPC", RpcTarget.AllBuffered);
+            PV.RPC("DestroyRPC", RpcTarget.AllBuffered);            
         }
 
+        // 구조물과 충돌
         if (collision.gameObject.CompareTag("Block") && !collision.gameObject.CompareTag("OtherPlayer"))
         {
             PV.RPC("DestroyRPC", RpcTarget.AllBuffered);
-        }
+        }          
+    }        
 
-
-        // if()        
-    }
-
-    [PunRPC]
-    void ShootRPC(Vector3 right, int myViewID)
+    [PunRPC]    // 탄환 발사
+    void ShootRPC(Vector3 right, int myViewID)     
     {
         squareViewID = myViewID;
         Rigidbody2D rigid = this.GetComponent<Rigidbody2D>();
         rigid.AddForce(right * 10.0f, ForceMode2D.Impulse);
     }
 
-    [PunRPC]
-    void DestroyRPC() => Destroy(gameObject);
-
-    [PunRPC]    // 상대 플레이어에게 데미지를 입힘
-    void AttackOtherPlayer(int targetPhotonViewID)
+    [PunRPC]    // 소리 효과
+    void SoundRPC()
     {
-        if (PV.IsMine)
-        {
-            // PhotonView ID를 사용하여 상대 플레이어에게 데미지 입힘
-            PhotonView targetPhotonView = PhotonView.Find(targetPhotonViewID);
-            if (targetPhotonView != null)
-            {
-                Player targetPlayer = targetPhotonView.GetComponent<Player>();
-                if (targetPlayer != null && targetPlayer.GetComponent<PhotonView>().IsMine)
-                {
-                    // 데미지를 입히는 로직 구현
-                    // targetPlayer.hp -= GetComponent<Player>().atkDamage;
-                    targetPlayer.hp -= 3;
-                    Debug.Log(targetPlayer.name + " : " + targetPlayer.hp);
-                }
-            }
-        }
+        audio.Play();
     }
 
     [PunRPC]
@@ -90,4 +75,7 @@ public class SquareBullet : MonoBehaviourPunCallbacks
 
         tmp.GetComponent<Player>().hp -= 1;
     }
+
+    [PunRPC]    // 오브젝트 제거
+    void DestroyRPC() => Destroy(gameObject);
 }
