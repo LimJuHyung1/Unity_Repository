@@ -10,6 +10,7 @@ public class Square : Player
     PolygonCollider2D polygon;
 
     [SerializeField] GameObject squareBullet;
+    [SerializeField] GameObject squareLight;
 
     private float timer = 0f;
     public float interval = 1f; // 1초마다 실행하도록 설정
@@ -23,6 +24,15 @@ public class Square : Player
         polygon = GetComponent<PolygonCollider2D>();
 
         squareBullet = Resources.Load<GameObject>("SquareBullet");
+        squareLight = Resources.Load<GameObject>("SquareLight");
+
+        if(squareLight != null)
+        {
+            GameObject tmpLight = 
+                PhotonNetwork.Instantiate("SquareLight", this.transform.position, Quaternion.identity);
+            tmpLight.GetComponent<PhotonView>().RPC("FindPlayer", RpcTarget.All, PV.ViewID);
+        }
+            
     }
 
     void Update()
